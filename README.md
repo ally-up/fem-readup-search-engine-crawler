@@ -29,6 +29,7 @@ Install all packages by running
 python -m pip install --upgrade pip
 pip install tqdm
 pip install requests
+pip install urllib3
 ```
 
 This repository is not intended to be executed, rather it is executed from within [fem-readup/fem-readup-search-engine-crawler](https://github.com/fem-readup/fem-readup-search-engine-crawler).
