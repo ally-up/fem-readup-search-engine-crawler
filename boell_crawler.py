@@ -7,7 +7,7 @@ import requests
 import urllib3
 
 from event import Event
-
+import re
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
@@ -228,7 +228,11 @@ def generate_content(logger, results_path, event: BoellEvent):
                     if key == "contact_person" or key == "contact_phone" or key == "contact_mail":
                         values_contact[key] = value
                     elif key == "languages":
-                        languages_list = value.removeprefix("'").removesuffix("'").replace("[", "").replace("]", "")
+                        languages_list = value
+                        languages_list = re.sub(r'^\'', "", languages_list)
+                        languages_list = re.sub(r'\'$', "", languages_list)
+                        languages_list = re.sub(r'\[', "", languages_list)
+                        languages_list = re.sub(r']', "", languages_list)
                         if len(languages_list) > 0:
                             types = languages_list.split(",")
                         pass
