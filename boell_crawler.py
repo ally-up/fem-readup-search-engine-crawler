@@ -323,8 +323,10 @@ class BoellCrawler:
         :param quiet:
         :return:
         """
-        # Make results path
+        # Make workspace path
         os.makedirs(os.path.join(workspace_path), exist_ok=True)
+        # Make results path
+        os.makedirs(os.path.join(results_path), exist_ok=True)
 
         # Download overview site
         download_site(logger, workspace_path, self.url, "boell.html", clean, quiet)
