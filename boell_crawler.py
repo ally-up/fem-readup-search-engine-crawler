@@ -241,7 +241,7 @@ def generate_content(logger, results_path, event: BoellEvent):
 
     # Update values
     if len(event.title) > 0:
-        values["title"] = event.image
+        values["title"] = event.title
     if len(event.subtitle) > 0:
         values["subtitle"] = event.subtitle
     if len(event.description) > 0:
