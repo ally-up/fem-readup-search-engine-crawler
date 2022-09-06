@@ -3,70 +3,19 @@ import re
 import xml.etree.ElementTree as element_tree
 from typing import List
 
-import requests
 import urllib3
 
-from event import Event
-import re
+from abstract_crawler import AbstractCrawler, download_site, well_form, format_date_time, format_date_times, \
+    format_date, generate_content, generate_image
+from abstract_event import AbstractEvent
+
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
-class BoellEvent(Event):
+class BoellEvent(AbstractEvent):
     """
     Represents an event posted on https://calendar.boell.de/
     """
-
-    def __init__(self, identifier, title, subtitle, description, image, start_date, end_date, place, category,
-                 languages, fees, url, contact_person, contact_phone, contact_mail):
-        super().__init__(identifier, title, subtitle, description, image, start_date, end_date, place, category,
-                         languages, fees, url, contact_person, contact_phone, contact_mail)
-
-
-def download_site(logger, results_path, url, file_name, clean, quiet):
-    """
-    Download a website into a given file
-    :param logger:
-    :param results_path:
-    :param url:
-    :param file_name:
-    :param clean:
-    :param quiet:
-    :return:
-    """
-
-    # Define file path
-    file_path = os.path.join(results_path, file_name)
-
-    # Check if result needs to be generated
-    if clean or not os.path.exists(file_path):
-
-        download_file(
-            logger=logger,
-            file_path=file_path,
-            url=url
-        )
-
-        if not quiet:
-            logger.log_line(f"✓ Download {file_path}")
-    else:
-        logger.log_line(f"✓ Already exists {file_path}")
-
-
-def download_file(logger, file_path, url):
-    """
-    Downloads content of a given URL into a file
-    :param logger:
-    :param file_path:
-    :param url:
-    :return:
-    """
-    try:
-        data = requests.get(url, verify=False)
-        with open(file_path, 'wb') as file:
-            file.write(data.content)
-    except Exception as e:
-        logger.log_line(f"✗️ Exception: {str(e)}")
-        return None
 
 
 def transform_html(workspace_path, html_file_name, xml_file_name):
@@ -81,13 +30,8 @@ def transform_html(workspace_path, html_file_name, xml_file_name):
         content = " ".join(html_file.read().splitlines())
         content = re.sub(r'.*<main', "<main", content)
         content = re.sub(r'main>.*', "main>", content)
-        content = re.sub(r'<br(.*?)>', "", content)
-        content = re.sub(r'<img(.*?)/*>', r'<img \1></img>', content)
-        content = re.sub(r'<input(.*?)>', "", content)
-        content = re.sub(r'<meta(.*?)>', "", content)
-        content = re.sub(r'data-drupal-messages-fallback', "", content)
-        content = re.sub(r'xml:lang="EN-US"', "", content)
-        content = re.sub(r'&nbsp;–', "", content)
+
+        content = well_form(content)
 
     with open(os.path.join(workspace_path, xml_file_name), "w") as xml_file:
         xml_file.write(content)
@@ -128,12 +72,14 @@ def parse_html(logger, workspace_path, html_file_name, clean, quiet) -> List[Boe
 
         field_image = root.find('.//div[@class="event--image"]/div/img')
         field_title = root.find('.//h1[@class="event--title"]')
-        field_subtitle = root.find('.//h1[@class="event--subtitle"]')
+        field_subtitle = root.find('.//h2[@class="event--subtitle"]')
         field_category = root.find('.//span[@class="field--event_type"]')
-        field_date_day = root.find('.//span[@class="field--date_date"]')
-        field_date_day_only = root.find('.//span[@class="field--date_date day-only"]')
+        field_date_date = root.find('.//span[@class="field--date_date"]')
+        field_date_time_with_day = root.find('.//span[@class="field--date_time_with_day"]')
+        field_date_time_hyphen = root.find('.//span[@class="field--date_time_hyphen"]')
+        field_date_day_only = root.findall('.//span[@class="field--date_date day-only"]')
         field_date_time = root.find('.//span[@class="field--date_time"]')
-        field_language = root.find('.//div[@class="field--spoken-language"]/dt')
+        field_spoken_language = root.findall('.//dl[@class="field--spoken-language"]/dd')
         field_fee = root.find('.//div[@class="field--spoken-language"]/dd')
         field_content = root.findall('.//div[@class="event--content"]/div[@class="column"]/div')
 
@@ -142,7 +88,7 @@ def parse_html(logger, workspace_path, html_file_name, clean, quiet) -> List[Boe
         else:
             title = ""
 
-        if field_subtitle is not None and field_subtitle[0].text is not None:
+        if field_subtitle is not None and field_subtitle.text is not None:
             subtitle = field_subtitle.text.strip()
         else:
             subtitle = ""
@@ -153,16 +99,22 @@ def parse_html(logger, workspace_path, html_file_name, clean, quiet) -> List[Boe
             description = ""
 
         if field_image is not None and field_image.attrib["src"] is not None:
-            image = f'{base_url}{re.sub(r"","",field_image.attrib["src"]).strip()}'
+            image = f'{base_url}{field_image.attrib["src"].strip()}'
         else:
             image = ""
 
-        if field_date_day is not None and field_date_time is not None:
-            start_date = f"{field_date_day.text.strip()} {field_date_time.text.strip().split(' ')[0]}"
-            end_date = f"{field_date_day.text.strip()} {field_date_time.text.strip().split(' ')[1]}"
+        if field_date_date is not None and field_date_date.text is not None and \
+                field_date_time is not None and field_date_time.text is not None:
+            start_date = format_date_time(field_date_date.text.strip(), field_date_time.text.strip().split(" ")[0])
+            end_date = format_date_time(field_date_date.text.strip(), field_date_time.text.strip().split(" ")[1])
+        elif field_date_date is not None and field_date_date.text is not None and \
+                field_date_time_with_day is not None and field_date_time_with_day.text is not None and \
+                field_date_time_hyphen is not None and field_date_time_hyphen.tail is not None:
+            start_date = format_date_times(f"{field_date_date.text} {field_date_time_with_day.text}")
+            end_date = format_date_times(field_date_time_hyphen.tail)
         elif field_date_day_only is not None:
-            start_date = f"{field_date_day_only.text.strip()}"
-            end_date = f"{field_date_day_only.text.strip()}"
+            start_date = format_date(field_date_day_only[0].text.strip())
+            end_date = format_date(field_date_day_only[1].text.strip())
         else:
             start_date = ""
             end_date = ""
@@ -174,8 +126,11 @@ def parse_html(logger, workspace_path, html_file_name, clean, quiet) -> List[Boe
         else:
             category = ""
 
-        if field_language is not None and field_language.text is not None:
-            languages = [field_language.text.strip()]
+        if field_spoken_language is not None:
+            languages = []
+
+            for spoken_language in field_spoken_language:
+                languages.append(spoken_language.text.strip())
         else:
             languages = []
 
@@ -212,100 +167,7 @@ def parse_html(logger, workspace_path, html_file_name, clean, quiet) -> List[Boe
     return events
 
 
-def generate_content(logger, results_path, event: BoellEvent):
-    file_name = f"{event.identifier}.md"
-    file_path = os.path.join(results_path, file_name)
-
-    values = {}
-    values_contact = {}
-
-    languages = []
-
-    if os.path.exists(file_path):
-
-        # Read existing file
-        with open(file_path, 'r') as file:
-            for line in file.readlines():
-                if "=" in line:
-                    key = line.split("=")[0].strip().replace("\"", "").replace("'", "")
-                    value = line.split("=")[1].strip().replace("\"", "").replace("'", "")
-                    value = str(value)
-
-                    if key == "contact_person" or key == "contact_phone" or key == "contact_mail":
-                        values_contact[key] = value
-                    elif key == "languages":
-                        languages_list = value
-                        languages_list = re.sub(r'^\'', "", languages_list)
-                        languages_list = re.sub(r'\'$', "", languages_list)
-                        languages_list = re.sub(r'\[', "", languages_list)
-                        languages_list = re.sub(r']', "", languages_list)
-                        if len(languages_list) > 0:
-                            types = languages_list.split(",")
-                        pass
-                    else:
-                        values[key] = value
-
-    # Update values
-    if len(event.title) > 0:
-        values["title"] = event.title
-    if len(event.subtitle) > 0:
-        values["subtitle"] = event.subtitle
-    if len(event.description) > 0:
-        values["description"] = event.description
-    if len(event.image) > 0:
-        values["image"] = event.image
-    if len(event.start_date) > 0:
-        values["start_date"] = event.start_date
-    if len(event.end_date) > 0:
-        values["end_date"] = event.end_date
-    if len(event.place) > 0:
-        values["place"] = event.place
-    if len(event.category) > 0:
-        values["category"] = event.category
-    if len(event.languages) > 0:
-        values["languages"] = event.languages
-    if len(event.fees) > 0:
-        values["fees"] = event.fees
-    if len(event.url) > 0:
-        values["url"] = event.url
-
-    if len(event.languages) > 0:
-        for language in event.languages:
-            languages.append(language)
-            languages = list(dict.fromkeys(types))
-
-    if len(event.contact_person) > 0:
-        values_contact["contact_person"] = event.contact_person
-    if len(event.contact_phone) > 0:
-        values_contact["contact_phone"] = event.contact_phone
-    if len(event.contact_mail) > 0:
-        values_contact["contact_mail"] = event.contact_mail
-
-    # Assemble content
-    content = "+++"
-    for key, value in values.items():
-        content += f"\n{key} = \"{value}\""
-
-    content += f"\nlanguages = ["
-    for language in languages:
-        if len(language) > 0:
-            content += f"\"{language.replace('_', ' ')}\","
-    content += "]"
-
-    content += "\n[contact]"
-    for key, value in values_contact.items():
-        content += f"\n{key} = \"{value}\""
-    content += "\n+++"
-
-    # Clean up
-    content = content.replace(",]", "]")
-
-    with open(file_path, 'w') as file:
-        logger.log_line(f"✓ Generate {file_name}")
-        file.write(content)
-
-
-class BoellCrawler:
+class BoellCrawler(AbstractCrawler):
     """
     Crawls events posted on https://calendar.boell.de/
     """
@@ -319,20 +181,19 @@ class BoellCrawler:
 
     url = f"https://calendar.boell.de/de/calendar/frontpage?{'&'.join(parameters)}"
 
-    def run(self, logger, workspace_path, results_path, clean=False, quiet=False):
+    def run(self, logger, workspace_path, content_path, uploads_path, clean=False, quiet=False):
         """
         Runs crawler
         :param logger:
         :param workspace_path:
-        :param results_path:
+        :param content_path:
+        :param uploads_path:
         :param clean:
         :param quiet:
         :return:
         """
-        # Make workspace path
-        os.makedirs(os.path.join(workspace_path), exist_ok=True)
-        # Make results path
-        os.makedirs(os.path.join(results_path), exist_ok=True)
+
+        super().run(logger, workspace_path, content_path, uploads_path, clean, quiet)
 
         # Download overview site
         download_site(logger, workspace_path, self.url, "boell.html", clean, quiet)
@@ -340,4 +201,7 @@ class BoellCrawler:
         # Parse overview site and iterate over events
         for event in parse_html(logger, workspace_path, "boell.html", clean, quiet):
             # Generate content for event
-            generate_content(logger, results_path, event)
+            generate_content(logger, content_path, event)
+
+            # Generate image for event
+            generate_image(logger, workspace_path, uploads_path, event)

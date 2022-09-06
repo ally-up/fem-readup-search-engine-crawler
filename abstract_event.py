@@ -1,17 +1,19 @@
 from datetime import datetime
 
-"""
-Represents an event posted on 
-"""
 
-class Event:
+class AbstractEvent:
+    """
+    Represents an event
+    """
+
     def __init__(self, identifier, title, subtitle, description, image, start_date, end_date, place, category,
                  languages, fees, url, contact_person, contact_phone, contact_mail):
-        self.identifier = identifier
-        self.title = title
-        self.subtitle = subtitle
-        self.description = description
-        self.image = image
+        self.type = "event"
+        self.identifier = identifier.replace("amp;", "").replace("--", "-")
+        self.title = title.replace("amp;", "&")
+        self.subtitle = subtitle.replace("amp;", "&")
+        self.description = description.replace("amp;", "&").replace("\"", "")
+        self.image = image.replace("amp;", "&")
         self.start_date = start_date
         self.end_date = end_date
         self.place = place
@@ -23,4 +25,5 @@ class Event:
         self.contact_phone = contact_phone
         self.contact_mail = contact_mail
 
-        self.updated = datetime.today().strftime('%d-%m-%Y')
+        self.updated = datetime.today().strftime('%Y-%m-%dT%H:%M:%S.000')
+
