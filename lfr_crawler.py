@@ -177,8 +177,12 @@ class LfrCrawler(AbstractCrawler):
 
         # Parse overview site and iterate over events
         for event in parse_html(logger, workspace_path, "lfr.html", clean, quiet):
-            # Generate content for event
-            generate_content(logger, content_path, event)
-
             # Generate image for event
             generate_image(logger, workspace_path, uploads_path, event)
+
+            # Update image URL
+            if event.image != "":
+                event.image = f"https://storage.googleapis.com/fem-readup.appspot.com/${event.identifier}.webp"
+
+            # Generate content for event
+            generate_content(logger, content_path, event)
