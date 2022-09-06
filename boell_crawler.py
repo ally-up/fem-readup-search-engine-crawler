@@ -82,7 +82,7 @@ def transform_html(workspace_path, html_file_name, xml_file_name):
         content = re.sub(r'.*<main', "<main", content)
         content = re.sub(r'main>.*', "main>", content)
         content = re.sub(r'<br(.*?)>', "", content)
-        content = re.sub(r'<img(.*?)>', "", content)
+        content = re.sub(r'<img(.*?)/*>', r'<img \1></img>', content)
         content = re.sub(r'<input(.*?)>', "", content)
         content = re.sub(r'<meta(.*?)>', "", content)
         content = re.sub(r'data-drupal-messages-fallback', "", content)
@@ -116,6 +116,8 @@ def parse_html(logger, workspace_path, html_file_name, clean, quiet) -> List[Boe
         link = link_element.attrib["href"]
         identifier = re.sub(r'.*/', "", link)
 
+        base_url = re.sub(r'\.de.*', ".de", link)
+
         html_file_name = identifier + ".html"
         xml_file_name = identifier + ".xml"
 
@@ -124,6 +126,7 @@ def parse_html(logger, workspace_path, html_file_name, clean, quiet) -> List[Boe
 
         root = element_tree.parse(os.path.join(workspace_path, xml_file_name)).getroot()
 
+        field_image = root.find('.//div[@class="event--image"]/div/img')
         field_title = root.find('.//h1[@class="event--title"]')
         field_subtitle = root.find('.//h1[@class="event--subtitle"]')
         field_category = root.find('.//span[@class="field--event_type"]')
@@ -149,7 +152,10 @@ def parse_html(logger, workspace_path, html_file_name, clean, quiet) -> List[Boe
         else:
             description = ""
 
-        image = ""
+        if field_image is not None and field_image.attrib["src"] is not None:
+            image = f'{base_url}{re.sub(r"","",field_image.attrib["src"]).strip()}'
+        else:
+            image = ""
 
         if field_date_day is not None and field_date_time is not None:
             start_date = f"{field_date_day.text.strip()} {field_date_time.text.strip().split(' ')[0]}"
@@ -178,7 +184,7 @@ def parse_html(logger, workspace_path, html_file_name, clean, quiet) -> List[Boe
         else:
             fees = ""
 
-        url = ""
+        url = link
         contact_person = ""
         contact_phone = ""
         contact_mail = ""
