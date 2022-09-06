@@ -205,7 +205,7 @@ class BoellCrawler(AbstractCrawler):
 
             # Update image URL
             if event.image != "":
-                event.image = f"https://storage.googleapis.com/fem-readup.appspot.com/${event.identifier}.webp"
+                event.image = f"https://storage.googleapis.com/fem-readup.appspot.com/{event.identifier}.webp"
 
             # Generate content for event
             generate_content(logger, content_path, event)
