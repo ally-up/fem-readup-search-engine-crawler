@@ -95,10 +95,8 @@ def parse_html(logger, workspace_path, html_file_name, clean, quiet) -> List[Lfr
                 field_month is not None and field_month.text is not None and \
                 field_day is not None and field_day.text is not None and \
                 field_time is not None and field_time.text is not None:
-            start_date = format_date_time_start(field_year.text, field_month.text, field_day.text, field_time.text,
-                                                delimiter=".")
-            end_date = format_date_time_end(field_year.text, field_month.text, field_day.text, field_time.text,
-                                            delimiter=".")
+            start_date = format_date_time_start(field_year.text, field_month.text, field_day.text, field_time.text)
+            end_date = format_date_time_end(field_year.text, field_month.text, field_day.text, field_time.text)
         elif field_year is not None and field_year.text is not None and \
                 field_month is not None and field_month.text is not None and \
                 field_day is not None and field_day.text is not None:
