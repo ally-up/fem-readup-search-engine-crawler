@@ -80,6 +80,8 @@ def well_form(value):
     value = re.sub(r'&', "", value)
 
     value = re.sub(r'<script(.*?)/script>', "", value)
+    value = re.sub(r'download>', ">", value)
+    value = re.sub(r'<\?xml version="1.0" encoding="UTF-8"\?>', "", value)
 
     return value
 
@@ -242,6 +244,9 @@ def generate_content(logger, content_path, event: AbstractEvent):
     if needs_update("image", event.image, values):
         values["image"] = event.image
         updated = True
+    if needs_update("image_bucket", event.image_bucket, values):
+        values["image_bucket"] = event.image_bucket
+        updated = True
     if needs_update("start_date", event.start_date, values):
         values["start_date"] = event.start_date
         updated = True
@@ -327,7 +332,7 @@ def generate_image(logger, workspace_path, upload_path, event: AbstractEvent):
 
 
 def needs_update(name, value, values):
-    return len(value) > 0 and (name not in values or name in values and value != values[name])
+    return value is not None and len(value) > 0 and (name not in values or name in values and value != values[name])
 
 
 def upload_file(self, logger, gcp_token_file, upload_file_path, project_id, bucket_name, quiet=False):

@@ -147,6 +147,7 @@ def parse_html(logger, workspace_path, html_file_name, clean, quiet) -> List[Ura
             subtitle=subtitle,
             description=description,
             image=image,
+            image_bucket=None,
             start_date=start_date,
             end_date=end_date,
             place=place,
@@ -193,9 +194,9 @@ class UraniaCrawler(AbstractCrawler):
             # Generate image for event
             generate_image(logger, workspace_path, uploads_path, event)
 
-            # Update image URL
+            # Add image bucket URL
             if event.image != "":
-                event.image = f"https://storage.googleapis.com/fem-readup.appspot.com/{event.identifier}.webp"
+                event.image_bucket = f"https://storage.googleapis.com/fem-readup.appspot.com/{event.identifier}.webp"
 
             # Generate content for event
             generate_content(logger, content_path, event)
