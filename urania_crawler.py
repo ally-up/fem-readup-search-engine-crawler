@@ -136,7 +136,7 @@ def parse_html(logger, workspace_path, html_file_name, clean, quiet) -> List[Ura
         else:
             fees = ""
 
-        url = link
+        url = f"{base_url}{link}"
         contact_person = ""
         contact_phone = ""
         contact_mail = ""
