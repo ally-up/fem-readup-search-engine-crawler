@@ -269,7 +269,7 @@ def generate_content(logger, content_path, event: AbstractEvent):
     if len(event.languages) > 0:
         for language in event.languages:
             languages.append(language)
-            languages = list(dict.fromkeys(types))
+            languages = list(dict.fromkeys(languages))
 
     if needs_update("contact_person", event.contact_person, values):
         values_contact["contact_person"] = event.contact_person
