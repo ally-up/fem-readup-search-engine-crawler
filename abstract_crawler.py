@@ -308,7 +308,7 @@ def generate_content(logger, content_path, event: AbstractEvent):
         file.write(content)
 
 
-def generate_image(logger, workspace_path, upload_path, event: AbstractEvent):
+def generate_image(logger, workspace_path, upload_path, event: AbstractEvent, target_width = 480):
     if event.image != "":
         # Download original image
         original_file_name = event.image
@@ -323,7 +323,6 @@ def generate_image(logger, workspace_path, upload_path, event: AbstractEvent):
         original_width = int(original_img.shape[1])
         original_height = int(original_img.shape[0])
         ratio = original_height / original_width
-        target_width = 960
 
         target_file_name = f"{event.identifier}.webp"
         target_file_path = os.path.join(upload_path, target_file_name)
