@@ -17,6 +17,15 @@ class BoellEvent(AbstractEvent):
     Represents an event posted on https://calendar.boell.de/
     """
 
+    def __init__(self, identifier, url, title, subtitle, description, image, image_bucket, start_date, end_date,
+                 category, languages, organizer, fees, contact_person, contact_phone, contact_mail, location_street,
+                 location_city):
+        source = "Heinrich Böll Stiftung"
+
+        super().__init__(identifier, source, url, title, subtitle, description, image, image_bucket, start_date,
+                         end_date, category, languages, organizer, fees, contact_person, contact_phone, contact_mail,
+                         location_street, location_city)
+
 
 def transform_html(workspace_path, html_file_name, xml_file_name):
     """
@@ -58,7 +67,9 @@ def parse_html(logger, workspace_path, html_file_name, clean, quiet) -> List[Boe
     for event_view in root.findall('.//div[@class="event-views views-rows"]')[0]:
         link_element = event_view.find('.//div[@class="event--title--wrapper"]/a')
         link = link_element.attrib["href"]
+
         identifier = re.sub(r'.*/', "", link)
+        url = link
 
         base_url = re.sub(r'\.de.*', ".de", link)
 
@@ -80,28 +91,17 @@ def parse_html(logger, workspace_path, html_file_name, clean, quiet) -> List[Boe
         field_date_day_only = root.findall('.//span[@class="field--date_date day-only"]')
         field_date_time = root.find('.//span[@class="field--date_time"]')
         field_spoken_language = root.findall('.//dl[@class="field--spoken-language"]/dd')
+        # field_location = root.find('.//dl[@class="field--location"]/dd/address')
+        field_organizer = root.find('.//dl[@class="field--organizer"]/dd/a')
         field_fee = root.find('.//div[@class="field--spoken-language"]/dd')
         field_content = root.findall('.//div[@class="event--content"]/div[@class="column"]/div')
 
-        if field_title is not None and field_title.text is not None:
-            title = field_title.text.strip()
-        else:
-            title = ""
-
-        if field_subtitle is not None and field_subtitle.text is not None:
-            subtitle = field_subtitle.text.strip()
-        else:
-            subtitle = ""
-
-        if field_content is not None and field_content[0].text is not None:
-            description = field_content[0].text.strip()
-        else:
-            description = ""
-
-        if field_image is not None and field_image.attrib["src"] is not None:
-            image = f'{base_url}{field_image.attrib["src"].strip()}'
-        else:
-            image = ""
+        title = field_title.text.strip() if field_title is not None and field_title.text is not None else ""
+        subtitle = field_subtitle.text.strip() if field_subtitle is not None and field_subtitle.text is not None else ""
+        description = field_content[0].text.strip() if field_content is not None and field_content[
+            0].text is not None else ""
+        image = f'{base_url}{field_image.attrib["src"].strip()}' if field_image is not None and field_image.attrib[
+            "src"] is not None else ""
 
         if field_date_date is not None and field_date_date.text is not None and \
                 field_date_time is not None and field_date_time.text is not None:
@@ -119,12 +119,7 @@ def parse_html(logger, workspace_path, html_file_name, clean, quiet) -> List[Boe
             start_date = ""
             end_date = ""
 
-        place = ""
-
-        if field_category is not None and field_category.text is not None:
-            category = field_category.text.strip()
-        else:
-            category = ""
+        category = field_category.text.strip() if field_category is not None and field_category.text is not None else ""
 
         if field_spoken_language is not None:
             languages = []
@@ -134,18 +129,22 @@ def parse_html(logger, workspace_path, html_file_name, clean, quiet) -> List[Boe
         else:
             languages = []
 
-        if field_fee is not None and field_fee.text is not None:
-            fees = [field_fee.text.strip()]
-        else:
-            fees = ""
+        # location = field_location.text.strip() if field_location is not None and field_location.text is not None
+        # else ""
+        organizer = field_organizer.text.strip() \
+            if field_organizer is not None and field_organizer.text is not None else ""
+        fees = [field_fee.text.strip()] if field_fee is not None and field_fee.text is not None else ""
 
-        url = link
         contact_person = ""
         contact_phone = ""
         contact_mail = ""
 
+        location_street = ""
+        location_city = ""
+
         event = BoellEvent(
             identifier=identifier,
+            url=url,
             title=title,
             subtitle=subtitle,
             description=description,
@@ -153,14 +152,15 @@ def parse_html(logger, workspace_path, html_file_name, clean, quiet) -> List[Boe
             image_bucket=None,
             start_date=start_date,
             end_date=end_date,
-            place=place,
             category=category,
             languages=languages,
+            organizer=organizer,
             fees=fees,
-            url=url,
             contact_person=contact_person,
             contact_phone=contact_phone,
-            contact_mail=contact_mail
+            contact_mail=contact_mail,
+            location_street=location_street,
+            location_city=location_city
         )
 
         events.append(event)

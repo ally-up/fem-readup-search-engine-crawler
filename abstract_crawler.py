@@ -197,6 +197,7 @@ def generate_content(logger, content_path, event: AbstractEvent):
 
     values = {}
     values_contact = {}
+    values_location = {}
 
     languages = []
 
@@ -213,6 +214,8 @@ def generate_content(logger, content_path, event: AbstractEvent):
 
                     if key == "contact_person" or key == "contact_phone" or key == "contact_mail":
                         values_contact[key] = value
+                    elif key == "location_street" or key == "location_city":
+                        values_location[key] = value
                     elif key == "languages":
                         languages_list = value
                         languages_list = re.sub(r'^\'', "", languages_list)
@@ -220,7 +223,7 @@ def generate_content(logger, content_path, event: AbstractEvent):
                         languages_list = re.sub(r'\[', "", languages_list)
                         languages_list = re.sub(r']', "", languages_list)
                         if len(languages_list) > 0:
-                            types = languages_list.split(",")
+                            languages = languages_list.split(",")
                         pass
                     else:
                         values[key] = value
@@ -228,6 +231,12 @@ def generate_content(logger, content_path, event: AbstractEvent):
     # Update values
     if needs_update("identifier", event.identifier, values):
         values["identifier"] = event.identifier
+        updated = True
+    if needs_update("source", event.source, values):
+        values["source"] = event.source
+        updated = True
+    if needs_update("url", event.url, values):
+        values["url"] = event.url
         updated = True
     if needs_update("type", event.type, values):
         values["type"] = event.type
@@ -253,17 +262,14 @@ def generate_content(logger, content_path, event: AbstractEvent):
     if needs_update("end_date", event.end_date, values):
         values["end_date"] = event.end_date
         updated = True
-    if needs_update("place", event.place, values):
-        values["place"] = event.place
-        updated = True
     if needs_update("category", event.category, values):
         values["category"] = event.category
         updated = True
+    if needs_update("organizer", event.organizer, values):
+        values["organizer"] = event.organizer
+        updated = True
     if needs_update("fees", event.fees, values):
         values["fees"] = event.fees
-        updated = True
-    if needs_update("url", event.url, values):
-        values["url"] = event.url
         updated = True
 
     if len(event.languages) > 0:
@@ -281,7 +287,14 @@ def generate_content(logger, content_path, event: AbstractEvent):
         values_contact["contact_mail"] = event.contact_mail
         updated = True
 
-    if len(event.updated) > 0 and updated == True:
+    if needs_update("location_street", event.location_street, values):
+        values_contact["location_street"] = event.location_street
+        updated = True
+    if needs_update("location_city", event.location_city, values):
+        values_contact["location_city"] = event.location_city
+        updated = True
+
+    if len(event.updated) > 0 and updated:
         values["updated"] = event.updated
 
     # Assemble content
@@ -298,6 +311,11 @@ def generate_content(logger, content_path, event: AbstractEvent):
     content += "\n[contact]"
     for key, value in values_contact.items():
         content += f"\n{key} = \"{value}\""
+
+    content += "\n[location]"
+    for key, value in values_location.items():
+        content += f"\n{key} = \"{value}\""
+
     content += "\n+++"
 
     # Clean up
@@ -308,7 +326,7 @@ def generate_content(logger, content_path, event: AbstractEvent):
         file.write(content)
 
 
-def generate_image(logger, workspace_path, upload_path, event: AbstractEvent, target_width = 480):
+def generate_image(logger, workspace_path, upload_path, event: AbstractEvent, target_width=480):
     if event.image != "":
         # Download original image
         original_file_name = event.image
@@ -334,7 +352,7 @@ def needs_update(name, value, values):
     return value is not None and len(value) > 0 and (name not in values or name in values and value != values[name])
 
 
-def upload_file(self, logger, gcp_token_file, upload_file_path, project_id, bucket_name, quiet=False):
+def upload_file(logger, gcp_token_file, upload_file_path, project_id, bucket_name, quiet=False):
     """
     See https://cloud.google.com/storage/docs/creating-buckets#storage-create-bucket-python
     """

@@ -17,6 +17,16 @@ class LfrEvent(AbstractEvent):
     Represents an event posted on https://www.landesfrauenrat-berlin.de/veranstaltungen-in-berlin/
     """
 
+    def __init__(self, identifier, url, title, subtitle, description, image, image_bucket, start_date, end_date,
+                 category, languages, organizer, fees, contact_person, contact_phone, contact_mail, location_street,
+                 location_city):
+
+        source = "Landesfrauenrat Berlin"
+
+        super().__init__(identifier, source, url, title, subtitle, description, image, image_bucket, start_date,
+                         end_date, category, languages, organizer, fees, contact_person, contact_phone, contact_mail,
+                         location_street, location_city)
+
 
 def transform_html(workspace_path, html_file_name, xml_file_name):
     """
@@ -37,7 +47,7 @@ def transform_html(workspace_path, html_file_name, xml_file_name):
         xml_file.write(content)
 
 
-def parse_html(logger, workspace_path, html_file_name, clean, quiet) -> List[LfrEvent]:
+def parse_html(logger, workspace_path, html_file_name, clean, quiet) -> List[AbstractEvent]:
     """
     Parses html file into a list of events
     :param logger:
@@ -63,32 +73,21 @@ def parse_html(logger, workspace_path, html_file_name, clean, quiet) -> List[Lfr
         field_month = event_view.find('.//div[@class="event-month"]')
         field_day = event_view.find('.//div[@class="event-day"]')
         field_time = root.find('.//span[@class="event-time"]')
+        field_location = root.find('.//span[@class="event-location"]')
         field_language = root.find('.//div[@class="field--spoken-language"]/dt')
         field_fee = root.find('.//div[@class="field--spoken-language"]/dd')  # TODO: fix copy paste
         field_content = root.findall('.//div[@class="event-content"]')
         field_url = event_view.find('.//a').attrib.get('href')
 
-        if field_title is not None and field_title.text is not None:
-            title = field_title.text.strip()
-            identifier = title.replace(' // ', ' ').lower() \
+        title = field_title.text.strip() if field_title is not None and field_title.text is not None else ""
+        identifier = title.replace(' // ', ' ').lower() \
                 .replace(".", "").replace("!", "").replace("&", "").replace(":", "") \
                 .replace("„", "").replace("“", "").replace("\"", "") \
                 .replace(" ", "-").replace("--", "-").replace("--", "-") \
                 .replace("-–-", "-").replace("---", "-")
-        else:
-            title = ""
-            identifier = ""
 
-        if field_subtitle is not None and field_subtitle[0].text is not None:
-            subtitle = field_subtitle.text.strip()
-        else:
-            subtitle = ""
-
-        if field_content is not None and field_content[0].text is not None:
-            description = field_content[0].text.strip()
-        else:
-            description = ""
-
+        subtitle = field_subtitle.text.strip() if field_subtitle is not None and field_subtitle[0].text is not None else ""
+        description = field_content[0].text.strip() if field_content is not None and field_content[0].text is not None else ""
         image = ""
 
         if field_year is not None and field_year.text is not None and \
@@ -106,30 +105,22 @@ def parse_html(logger, workspace_path, html_file_name, clean, quiet) -> List[Lfr
             start_date = ""
             end_date = ""
 
-        place = ""
         category = ""
-
-        if field_language is not None and field_language.text is not None:
-            languages = [field_language.text.strip()]
-        else:
-            languages = []
-
-        if field_fee is not None and field_fee.text is not None:
-            fees = [field_fee.text.strip()]
-        else:
-            fees = ""
-
-        if field_url is not None:
-            url = field_url.strip()
-        else:
-            url = ""
+        languages = [field_language.text.strip()] if field_language is not None and field_language.text is not None else []
+        organizer = field_location.text.strip() if field_location is not None and field_location.text is not None else ""
+        fees = [field_fee.text.strip()] if field_fee is not None and field_fee.text is not None else ""
+        url = field_url.strip() if field_url is not None else ""
 
         contact_person = ""
         contact_phone = ""
         contact_mail = ""
 
+        location_street = ""
+        location_city = ""
+
         event = LfrEvent(
             identifier=identifier,
+            url=url,
             title=title,
             subtitle=subtitle,
             description=description,
@@ -137,14 +128,15 @@ def parse_html(logger, workspace_path, html_file_name, clean, quiet) -> List[Lfr
             image_bucket=None,
             start_date=start_date,
             end_date=end_date,
-            place=place,
             category=category,
             languages=languages,
+            organizer=organizer,
             fees=fees,
-            url=url,
             contact_person=contact_person,
             contact_phone=contact_phone,
-            contact_mail=contact_mail
+            contact_mail=contact_mail,
+            location_street=location_street,
+            location_city=location_city
         )
 
         events.append(event)

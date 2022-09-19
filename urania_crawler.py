@@ -16,6 +16,17 @@ class UraniaEvent(AbstractEvent):
     Represents an event posted on https://www.urania.de/
     """
 
+    def __init__(self, identifier, url, title, subtitle, description, image, image_bucket, start_date, end_date,
+                 category, languages, fees, contact_person, contact_phone, contact_mail):
+        source = "Urania Berlin e.V."
+        organizer = "Urania Berlin e.V."
+        location_street = "An der Urania 17"
+        location_city = "10787 Berlin"
+
+        super().__init__(identifier, source, url, title, subtitle, description, image, image_bucket, start_date,
+                         end_date, category, languages, organizer, fees, contact_person, contact_phone,
+                         contact_mail, location_street, location_city)
+
 
 def transform_html(workspace_path, html_file_name, xml_file_name):
     """
@@ -85,58 +96,29 @@ def parse_html(logger, workspace_path, html_file_name, clean, quiet) -> List[Ura
         field_subtitle = root.find('.//h2[@class="field-content FSL"]')
         field_category = root.find('.//span[@class="field-content"]')
         field_date_time_with_day = root.find('.//span[@class="date-display-single"]').attrib['content']
-        field_date_time = root.find('.//span[@class="field--date_time"]')
+        # field_date_time = root.find('.//span[@class="field--date_time"]')
         field_language = root.find('.//div[@class="field--spoken-language"]/dt')
         field_fee = root.find('.//div[@class="field--spoken-language"]/dd')
         field_content = ""
         for paragraph in root.find('.//div[@class="field-content serif lh14"]'):
             field_content.join(f'{paragraph.text}\n')
 
-        if field_title is not None and field_title.text is not None:
-            title = field_title.text.strip()
-        else:
-            title = ""
-
-        if field_subtitle is not None and field_subtitle.text is not None:
-            subtitle = field_subtitle.text.strip()
-        else:
-            subtitle = ""
-
-        if field_content is not None:
-            description = field_content.strip()
-        else:
-            description = ""
-
-        if field_image is not None:
-            image = field_image
-        else:
-            image = ""
-
-        if field_date_time_with_day is not None and field_date_time_with_day is not None:
-            start_date = field_date_time_with_day
-            end_date = field_date_time_with_day
-        else:
-            start_date = ""
-            end_date = ""
-
-        place = ""
-
-        if field_category is not None and field_category.text is not None:
-            category = field_category.text.split("-")[-1].strip()
-        else:
-            category = ""
-
-        if field_language is not None and field_language.text is not None:
-            languages = [field_language.text.strip()]
-        else:
-            languages = []
-
-        if field_fee is not None and field_fee.text is not None:
-            fees = [field_fee.text.strip()]
-        else:
-            fees = ""
+        title = field_title.text.strip() if field_title is not None and field_title.text is not None else ""
+        subtitle = field_subtitle.text.strip() if field_subtitle is not None and field_subtitle.text is not None else ""
+        description = field_content.strip() if field_content is not None else ""
+        image = field_image if field_image is not None else ""
+        start_date = field_date_time_with_day \
+            if field_date_time_with_day is not None and field_date_time_with_day is not None else ""
+        end_date = field_date_time_with_day \
+            if field_date_time_with_day is not None and field_date_time_with_day is not None else ""
+        category = field_category.text.split("-")[
+            -1].strip() if field_category is not None and field_category.text is not None else ""
+        languages = [
+            field_language.text.strip()] if field_language is not None and field_language.text is not None else []
+        fees = [field_fee.text.strip()] if field_fee is not None and field_fee.text is not None else ""
 
         url = f"{base_url}{link}"
+
         contact_person = ""
         contact_phone = ""
         contact_mail = ""
@@ -150,7 +132,6 @@ def parse_html(logger, workspace_path, html_file_name, clean, quiet) -> List[Ura
             image_bucket=None,
             start_date=start_date,
             end_date=end_date,
-            place=place,
             category=category,
             languages=languages,
             fees=fees,
