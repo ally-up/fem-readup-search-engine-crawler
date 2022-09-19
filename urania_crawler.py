@@ -5,7 +5,8 @@ from typing import List
 
 import urllib3
 
-from abstract_crawler import AbstractCrawler, download_site, well_form, generate_content, generate_image
+from abstract_crawler import AbstractCrawler, download_site, well_form, format_identifier, generate_content, \
+    generate_image
 from abstract_event import AbstractEvent
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -78,7 +79,7 @@ def parse_html(logger, workspace_path, html_file_name, clean, quiet) -> List[Ura
     base_url = "https://www.urania.de"
     for teaser in feminist_teasers:
         link = teaser.find('.//a').attrib['href']
-        identifier = re.sub(r'.*/', "", link)
+        identifier = format_identifier(re.sub(r'.*/', "", link))
         html_file_name = identifier + ".html"
         xml_file_name = identifier + ".xml"
         download_site(logger, workspace_path, f'{base_url}{link}', html_file_name, clean, quiet)

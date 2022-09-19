@@ -5,8 +5,8 @@ from typing import List
 
 import urllib3
 
-from abstract_crawler import AbstractCrawler, download_site, well_form, format_date_time, format_date_times, \
-    format_date, generate_content, generate_image
+from abstract_crawler import AbstractCrawler, download_site, well_form, format_identifier, format_date_time, \
+    format_date_times, format_date, generate_content, generate_image
 from abstract_event import AbstractEvent
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -68,7 +68,7 @@ def parse_html(logger, workspace_path, html_file_name, clean, quiet) -> List[Boe
         link_element = event_view.find('.//div[@class="event--title--wrapper"]/a')
         link = link_element.attrib["href"]
 
-        identifier = re.sub(r'.*/', "", link)
+        identifier = format_identifier(re.sub(r'.*/', "", link))
         url = link
 
         base_url = re.sub(r'\.de.*', ".de", link)

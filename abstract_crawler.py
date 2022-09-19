@@ -86,6 +86,16 @@ def well_form(value):
     return value
 
 
+def format_identifier(identifier):
+    return identifier.lower() \
+        .replace(' // ', ' ') \
+        .replace(".", "").replace("!", "").replace("&", "").replace(":", "") \
+        .replace("„", "").replace("“", "").replace("\"", "") \
+        .replace(" ", "-").replace("--", "-").replace("--", "-") \
+        .replace("-–-", "-").replace("---", "-") \
+        .replace("save-date-", "").replace("save-the-date-", "")
+
+
 def format_date(date):
     date_parts = date.split(" ")
 

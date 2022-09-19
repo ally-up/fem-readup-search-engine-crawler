@@ -5,8 +5,8 @@ from typing import List
 
 import urllib3
 
-from abstract_crawler import AbstractCrawler, download_site, well_form, format_date_split, format_date_time_start, \
-    format_date_time_end, generate_content, generate_image
+from abstract_crawler import AbstractCrawler, download_site, well_form, format_identifier, format_date_split, \
+    format_date_time_start, format_date_time_end, generate_content, generate_image
 from abstract_event import AbstractEvent
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -20,7 +20,6 @@ class LfrEvent(AbstractEvent):
     def __init__(self, identifier, url, title, subtitle, description, image, image_bucket, start_date, end_date,
                  category, languages, organizer, fees, contact_person, contact_phone, contact_mail, location_street,
                  location_city):
-
         source = "Landesfrauenrat Berlin"
 
         super().__init__(identifier, source, url, title, subtitle, description, image, image_bucket, start_date,
@@ -80,14 +79,12 @@ def parse_html(logger, workspace_path, html_file_name, clean, quiet) -> List[Abs
         field_url = event_view.find('.//a').attrib.get('href')
 
         title = field_title.text.strip() if field_title is not None and field_title.text is not None else ""
-        identifier = title.replace(' // ', ' ').lower() \
-                .replace(".", "").replace("!", "").replace("&", "").replace(":", "") \
-                .replace("„", "").replace("“", "").replace("\"", "") \
-                .replace(" ", "-").replace("--", "-").replace("--", "-") \
-                .replace("-–-", "-").replace("---", "-")
+        identifier = format_identifier(title)
 
-        subtitle = field_subtitle.text.strip() if field_subtitle is not None and field_subtitle[0].text is not None else ""
-        description = field_content[0].text.strip() if field_content is not None and field_content[0].text is not None else ""
+        subtitle = field_subtitle.text.strip() if field_subtitle is not None and field_subtitle[
+            0].text is not None else ""
+        description = field_content[0].text.strip() if field_content is not None and field_content[
+            0].text is not None else ""
         image = ""
 
         if field_year is not None and field_year.text is not None and \
@@ -106,7 +103,8 @@ def parse_html(logger, workspace_path, html_file_name, clean, quiet) -> List[Abs
             end_date = ""
 
         category = ""
-        languages = [field_language.text.strip()] if field_language is not None and field_language.text is not None else []
+        languages = [
+            field_language.text.strip()] if field_language is not None and field_language.text is not None else []
         organizer = field_location.text.strip() if field_location is not None and field_location.text is not None else ""
         fees = [field_fee.text.strip()] if field_fee is not None and field_fee.text is not None else ""
         url = field_url.strip() if field_url is not None else ""
