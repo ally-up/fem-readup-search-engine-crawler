@@ -86,11 +86,15 @@ def well_form(value):
     return value
 
 
+def format_title(title):
+    return title.strip().replace("quot;", "\"")
+
+
 def format_identifier(identifier):
     return identifier.lower() \
         .replace(' // ', ' ') \
         .replace(".", "").replace("!", "").replace("&", "").replace(":", "") \
-        .replace("„", "").replace("“", "").replace("\"", "") \
+        .replace("\"", "").replace("„", "").replace("“", "").replace("\"", "") \
         .replace(" ", "-").replace("--", "-").replace("--", "-") \
         .replace("-–-", "-").replace("---", "-") \
         .replace("save-date-", "").replace("save-the-date-", "")

@@ -5,8 +5,8 @@ from typing import List
 
 import urllib3
 
-from abstract_crawler import AbstractCrawler, download_site, well_form, format_identifier, generate_content, \
-    generate_image
+from abstract_crawler import AbstractCrawler, download_site, well_form, format_identifier, format_title, \
+    generate_content, generate_image
 from abstract_event import AbstractEvent
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -104,7 +104,7 @@ def parse_html(logger, workspace_path, html_file_name, clean, quiet) -> List[Ura
         for paragraph in root.find('.//div[@class="field-content serif lh14"]'):
             field_content.join(f'{paragraph.text}\n')
 
-        title = field_title.text.strip() if field_title is not None and field_title.text is not None else ""
+        title = format_title(field_title.text) if field_title is not None and field_title.text is not None else ""
         subtitle = field_subtitle.text.strip() if field_subtitle is not None and field_subtitle.text is not None else ""
         description = field_content.strip() if field_content is not None else ""
         image = field_image if field_image is not None else ""

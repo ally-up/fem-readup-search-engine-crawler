@@ -5,8 +5,8 @@ from typing import List
 
 import urllib3
 
-from abstract_crawler import AbstractCrawler, download_site, well_form, format_identifier, format_date_split, \
-    format_date_time_start, format_date_time_end, generate_content, generate_image
+from abstract_crawler import AbstractCrawler, download_site, well_form, format_title, format_identifier, \
+    format_date_split, format_date_time_start, format_date_time_end, generate_content, generate_image
 from abstract_event import AbstractEvent
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -78,7 +78,8 @@ def parse_html(logger, workspace_path, html_file_name, clean, quiet) -> List[Abs
         field_content = root.findall('.//div[@class="event-content"]')
         field_url = event_view.find('.//a').attrib.get('href')
 
-        title = field_title.text.strip() if field_title is not None and field_title.text is not None else ""
+        title = format_title(
+            field_title.text.strip()) if field_title is not None and field_title.text is not None else ""
         identifier = format_identifier(title)
 
         subtitle = field_subtitle.text.strip() if field_subtitle is not None and field_subtitle[

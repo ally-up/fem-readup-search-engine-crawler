@@ -5,8 +5,8 @@ from typing import List
 
 import urllib3
 
-from abstract_crawler import AbstractCrawler, download_site, well_form, format_identifier, format_date_time, \
-    format_date_times, format_date, generate_content, generate_image
+from abstract_crawler import AbstractCrawler, download_site, well_form, format_title, format_identifier, \
+    format_date_time, format_date_times, format_date, generate_content, generate_image
 from abstract_event import AbstractEvent
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -96,7 +96,7 @@ def parse_html(logger, workspace_path, html_file_name, clean, quiet) -> List[Boe
         field_fee = root.find('.//div[@class="field--spoken-language"]/dd')
         field_content = root.findall('.//div[@class="event--content"]/div[@class="column"]/div')
 
-        title = field_title.text.strip() if field_title is not None and field_title.text is not None else ""
+        title = format_title(field_title.text) if field_title is not None and field_title.text is not None else ""
         subtitle = field_subtitle.text.strip() if field_subtitle is not None and field_subtitle.text is not None else ""
         description = field_content[0].text.strip() if field_content is not None and field_content[
             0].text is not None else ""
