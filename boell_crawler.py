@@ -66,104 +66,108 @@ def parse_html(logger, workspace_path, html_file_name, clean, quiet) -> List[Boe
     # Parse page
     for event_view in root.findall('.//div[@class="event-views views-rows"]')[0]:
         link_element = event_view.find('.//div[@class="event--title--wrapper"]/a')
-        link = link_element.attrib["href"]
 
-        identifier = format_identifier(re.sub(r'.*/', "", link))
-        url = link
+        if link_element is not None:
+            link = link_element.attrib["href"]
 
-        base_url = re.sub(r'\.de.*', ".de", link)
+            identifier = format_identifier(re.sub(r'.*/', "", link))
+            url = link
 
-        html_file_name = identifier + ".html"
-        xml_file_name = identifier + ".xml"
+            base_url = re.sub(r'\.de.*', ".de", link)
 
-        download_site(logger, workspace_path, link, html_file_name, clean, quiet)
-        transform_html(workspace_path, html_file_name, xml_file_name)
+            html_file_name = identifier + ".html"
+            xml_file_name = identifier + ".xml"
 
-        root = element_tree.parse(os.path.join(workspace_path, xml_file_name)).getroot()
+            download_site(logger, workspace_path, link, html_file_name, clean, quiet)
+            transform_html(workspace_path, html_file_name, xml_file_name)
 
-        field_image = root.find('.//div[@class="event--image"]/div/img')
-        field_title = root.find('.//h1[@class="event--title"]')
-        field_subtitle = root.find('.//h2[@class="event--subtitle"]')
-        field_category = root.find('.//span[@class="field--event_type"]')
-        field_date_date = root.find('.//span[@class="field--date_date"]')
-        field_date_time_with_day = root.find('.//span[@class="field--date_time_with_day"]')
-        field_date_time_hyphen = root.find('.//span[@class="field--date_time_hyphen"]')
-        field_date_day_only = root.findall('.//span[@class="field--date_date day-only"]')
-        field_date_time = root.find('.//span[@class="field--date_time"]')
-        field_spoken_language = root.findall('.//dl[@class="field--spoken-language"]/dd')
-        # field_location = root.find('.//dl[@class="field--location"]/dd/address')
-        field_organizer = root.find('.//dl[@class="field--organizer"]/dd/a')
-        field_fee = root.find('.//div[@class="field--spoken-language"]/dd')
-        field_content = root.findall('.//div[@class="event--content"]/div[@class="column"]/div')
+            root = element_tree.parse(os.path.join(workspace_path, xml_file_name)).getroot()
 
-        title = format_title(field_title.text) if field_title is not None and field_title.text is not None else ""
-        subtitle = field_subtitle.text.strip() if field_subtitle is not None and field_subtitle.text is not None else ""
-        description = field_content[0].text.strip() if field_content is not None and field_content[
-            0].text is not None else ""
-        image = f'{base_url}{field_image.attrib["src"].strip()}' if field_image is not None and field_image.attrib[
-            "src"] is not None else ""
+            field_image = root.find('.//div[@class="event--image"]/div/img')
+            field_title = root.find('.//h1[@class="event--title"]')
+            field_subtitle = root.find('.//h2[@class="event--subtitle"]')
+            field_category = root.find('.//span[@class="field--event_type"]')
+            field_date_date = root.find('.//span[@class="field--date_date"]')
+            field_date_time_with_day = root.find('.//span[@class="field--date_time_with_day"]')
+            field_date_time_hyphen = root.find('.//span[@class="field--date_time_hyphen"]')
+            field_date_day_only = root.findall('.//span[@class="field--date_date day-only"]')
+            field_date_time = root.find('.//span[@class="field--date_time"]')
+            field_spoken_language = root.findall('.//dl[@class="field--spoken-language"]/dd')
+            # field_location = root.find('.//dl[@class="field--location"]/dd/address')
+            field_organizer = root.find('.//dl[@class="field--organizer"]/dd/a')
+            field_fee = root.find('.//div[@class="field--spoken-language"]/dd')
+            field_content = root.findall('.//div[@class="event--content"]/div[@class="column"]/div')
 
-        if field_date_date is not None and field_date_date.text is not None and \
-                field_date_time is not None and field_date_time.text is not None:
-            start_date = format_date_time(field_date_date.text.strip(), field_date_time.text.strip().split(" ")[0])
-            end_date = format_date_time(field_date_date.text.strip(), field_date_time.text.strip().split(" ")[1])
-        elif field_date_date is not None and field_date_date.text is not None and \
-                field_date_time_with_day is not None and field_date_time_with_day.text is not None and \
-                field_date_time_hyphen is not None and field_date_time_hyphen.tail is not None:
-            start_date = format_date_times(f"{field_date_date.text} {field_date_time_with_day.text}")
-            end_date = format_date_times(field_date_time_hyphen.tail)
-        elif field_date_day_only is not None:
-            start_date = format_date(field_date_day_only[0].text.strip())
-            end_date = format_date(field_date_day_only[1].text.strip())
+            title = format_title(field_title.text) if field_title is not None and field_title.text is not None else ""
+            subtitle = field_subtitle.text.strip() if field_subtitle is not None and field_subtitle.text is not None else ""
+            description = field_content[0].text.strip() if field_content is not None and field_content[
+                0].text is not None else ""
+            image = f'{base_url}{field_image.attrib["src"].strip()}' if field_image is not None and field_image.attrib[
+                "src"] is not None else ""
+
+            if field_date_date is not None and field_date_date.text is not None and \
+                    field_date_time is not None and field_date_time.text is not None:
+                start_date = format_date_time(field_date_date.text.strip(), field_date_time.text.strip().split(" ")[0])
+                end_date = format_date_time(field_date_date.text.strip(), field_date_time.text.strip().split(" ")[1])
+            elif field_date_date is not None and field_date_date.text is not None and \
+                    field_date_time_with_day is not None and field_date_time_with_day.text is not None and \
+                    field_date_time_hyphen is not None and field_date_time_hyphen.tail is not None:
+                start_date = format_date_times(f"{field_date_date.text} {field_date_time_with_day.text}")
+                end_date = format_date_times(field_date_time_hyphen.tail)
+            elif field_date_day_only is not None:
+                start_date = format_date(field_date_day_only[0].text.strip())
+                end_date = format_date(field_date_day_only[1].text.strip())
+            else:
+                start_date = ""
+                end_date = ""
+
+            category = field_category.text.strip() if field_category is not None and field_category.text is not None else ""
+
+            if field_spoken_language is not None:
+                languages = []
+
+                for spoken_language in field_spoken_language:
+                    languages.append(spoken_language.text.strip())
+            else:
+                languages = []
+
+            # location = field_location.text.strip() if field_location is not None and field_location.text is not None
+            # else ""
+            organizer = field_organizer.text.strip() \
+                if field_organizer is not None and field_organizer.text is not None else ""
+            fees = [field_fee.text.strip()] if field_fee is not None and field_fee.text is not None else ""
+
+            contact_person = ""
+            contact_phone = ""
+            contact_mail = ""
+
+            location_street = ""
+            location_city = ""
+
+            event = BoellEvent(
+                identifier=identifier,
+                url=url,
+                title=title,
+                subtitle=subtitle,
+                description=description,
+                image=image,
+                image_bucket=None,
+                start_date=start_date,
+                end_date=end_date,
+                category=category,
+                languages=languages,
+                organizer=organizer,
+                fees=fees,
+                contact_person=contact_person,
+                contact_phone=contact_phone,
+                contact_mail=contact_mail,
+                location_street=location_street,
+                location_city=location_city
+            )
+
+            events.append(event)
         else:
-            start_date = ""
-            end_date = ""
-
-        category = field_category.text.strip() if field_category is not None and field_category.text is not None else ""
-
-        if field_spoken_language is not None:
-            languages = []
-
-            for spoken_language in field_spoken_language:
-                languages.append(spoken_language.text.strip())
-        else:
-            languages = []
-
-        # location = field_location.text.strip() if field_location is not None and field_location.text is not None
-        # else ""
-        organizer = field_organizer.text.strip() \
-            if field_organizer is not None and field_organizer.text is not None else ""
-        fees = [field_fee.text.strip()] if field_fee is not None and field_fee.text is not None else ""
-
-        contact_person = ""
-        contact_phone = ""
-        contact_mail = ""
-
-        location_street = ""
-        location_city = ""
-
-        event = BoellEvent(
-            identifier=identifier,
-            url=url,
-            title=title,
-            subtitle=subtitle,
-            description=description,
-            image=image,
-            image_bucket=None,
-            start_date=start_date,
-            end_date=end_date,
-            category=category,
-            languages=languages,
-            organizer=organizer,
-            fees=fees,
-            contact_person=contact_person,
-            contact_phone=contact_phone,
-            contact_mail=contact_mail,
-            location_street=location_street,
-            location_city=location_city
-        )
-
-        events.append(event)
+            pass
 
     return events
 
