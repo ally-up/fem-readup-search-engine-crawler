@@ -64,81 +64,83 @@ def parse_html(logger, workspace_path, html_file_name, clean, quiet) -> List[Abs
     events = []
 
     # Parse page
-    for event_view in root.findall('.//ul[@class="event-list-view"]')[0]:
+    event_views = root.findall('.//ul[@class="event-list-view"]')
+    if len(event_views) > 0:
+        for event_view in event_views[0]:
 
-        field_title = event_view.find('.//a')
-        field_subtitle = root.find('.//h1[@class="event--subtitle"]')
-        field_year = event_view.find('.//div[@class="event-year"]')
-        field_month = event_view.find('.//div[@class="event-month"]')
-        field_day = event_view.find('.//div[@class="event-day"]')
-        field_time = root.find('.//span[@class="event-time"]')
-        field_location = root.find('.//span[@class="event-location"]')
-        field_language = root.find('.//div[@class="field--spoken-language"]/dt')
-        field_fee = root.find('.//div[@class="field--spoken-language"]/dd')  # TODO: fix copy paste
-        field_content = root.findall('.//div[@class="event-content"]')
-        field_url = event_view.find('.//a').attrib.get('href')
+            field_title = event_view.find('.//a')
+            field_subtitle = root.find('.//h1[@class="event--subtitle"]')
+            field_year = event_view.find('.//div[@class="event-year"]')
+            field_month = event_view.find('.//div[@class="event-month"]')
+            field_day = event_view.find('.//div[@class="event-day"]')
+            field_time = root.find('.//span[@class="event-time"]')
+            field_location = root.find('.//span[@class="event-location"]')
+            field_language = root.find('.//div[@class="field--spoken-language"]/dt')
+            field_fee = root.find('.//div[@class="field--spoken-language"]/dd')  # TODO: fix copy paste
+            field_content = root.findall('.//div[@class="event-content"]')
+            field_url = event_view.find('.//a').attrib.get('href')
 
-        title = format_title(
-            field_title.text.strip()) if field_title is not None and field_title.text is not None else ""
-        identifier = format_identifier(title)
+            title = format_title(
+                field_title.text.strip()) if field_title is not None and field_title.text is not None else ""
+            identifier = format_identifier(title)
 
-        subtitle = field_subtitle.text.strip() if field_subtitle is not None and field_subtitle[
-            0].text is not None else ""
-        description = field_content[0].text.strip() if field_content is not None and field_content[
-            0].text is not None else ""
-        image = ""
+            subtitle = field_subtitle.text.strip() if field_subtitle is not None and field_subtitle[
+                0].text is not None else ""
+            description = field_content[0].text.strip() if field_content is not None and field_content[
+                0].text is not None else ""
+            image = ""
 
-        if field_year is not None and field_year.text is not None and \
-                field_month is not None and field_month.text is not None and \
-                field_day is not None and field_day.text is not None and \
-                field_time is not None and field_time.text is not None:
-            start_date = format_date_time_start(field_year.text, field_month.text, field_day.text, field_time.text)
-            end_date = format_date_time_end(field_year.text, field_month.text, field_day.text, field_time.text)
-        elif field_year is not None and field_year.text is not None and \
-                field_month is not None and field_month.text is not None and \
-                field_day is not None and field_day.text is not None:
-            start_date = format_date_split(field_year.text, field_month.text, field_day.text)
-            end_date = format_date_split(field_year.text, field_month.text, field_day.text)
-        else:
-            start_date = ""
-            end_date = ""
+            if field_year is not None and field_year.text is not None and \
+                    field_month is not None and field_month.text is not None and \
+                    field_day is not None and field_day.text is not None and \
+                    field_time is not None and field_time.text is not None:
+                start_date = format_date_time_start(field_year.text, field_month.text, field_day.text, field_time.text)
+                end_date = format_date_time_end(field_year.text, field_month.text, field_day.text, field_time.text)
+            elif field_year is not None and field_year.text is not None and \
+                    field_month is not None and field_month.text is not None and \
+                    field_day is not None and field_day.text is not None:
+                start_date = format_date_split(field_year.text, field_month.text, field_day.text)
+                end_date = format_date_split(field_year.text, field_month.text, field_day.text)
+            else:
+                start_date = ""
+                end_date = ""
 
-        category = ""
-        languages = [
-            field_language.text.strip()] if field_language is not None and field_language.text is not None else []
-        organizer = field_location.text.strip() if field_location is not None and field_location.text is not None else ""
-        fees = [field_fee.text.strip()] if field_fee is not None and field_fee.text is not None else ""
-        url = field_url.strip() if field_url is not None else ""
+            category = ""
+            languages = [
+                field_language.text.strip()] if field_language is not None and field_language.text is not None else []
+            organizer = field_location.text.strip() if field_location is not None and field_location.text is not None else ""
+            fees = [field_fee.text.strip()] if field_fee is not None and field_fee.text is not None else ""
+            url = field_url.strip() if field_url is not None else ""
 
-        contact_person = ""
-        contact_phone = ""
-        contact_mail = ""
+            contact_person = ""
+            contact_phone = ""
+            contact_mail = ""
 
-        location_street = ""
-        location_city = ""
+            location_street = ""
+            location_city = ""
 
-        event = LfrEvent(
-            identifier=identifier,
-            url=url,
-            title=title,
-            subtitle=subtitle,
-            description=description,
-            image=image,
-            image_bucket=None,
-            start_date=start_date,
-            end_date=end_date,
-            category=category,
-            languages=languages,
-            organizer=organizer,
-            fees=fees,
-            contact_person=contact_person,
-            contact_phone=contact_phone,
-            contact_mail=contact_mail,
-            location_street=location_street,
-            location_city=location_city
-        )
+            event = LfrEvent(
+                identifier=identifier,
+                url=url,
+                title=title,
+                subtitle=subtitle,
+                description=description,
+                image=image,
+                image_bucket=None,
+                start_date=start_date,
+                end_date=end_date,
+                category=category,
+                languages=languages,
+                organizer=organizer,
+                fees=fees,
+                contact_person=contact_person,
+                contact_phone=contact_phone,
+                contact_mail=contact_mail,
+                location_street=location_street,
+                location_city=location_city
+            )
 
-        events.append(event)
+            events.append(event)
 
     return events
 
