@@ -179,10 +179,9 @@ class BoellCrawler(AbstractCrawler):
     parameter_berlin = "f%5B0%5D=ort_slide_in%3A2445"
     parameter_feminism = "f%5B1%5D=thema_slide_in_menu%3A3431"
     parameter_women = "f%5B2%5D=thema_slide_in_menu%3A3487"
-    parameter_antifeminism = "f%5B0%5D=thema_slide_in_menu%3A4371"
-    parameter_lbtgi = "f%5B0%5D=thema_slide_in_menu%3A3485"
+    parameter_gender_democracy = "f%5B3%5D=thema_slide_in_menu%3A3487"
 
-    parameters = [parameter_berlin, parameter_feminism, parameter_women, parameter_antifeminism, parameter_lbtgi]
+    parameters = [parameter_berlin, parameter_feminism, parameter_women, parameter_gender_democracy]
 
     url = f"https://calendar.boell.de/de/calendar/frontpage?{'&'.join(parameters)}"
 
