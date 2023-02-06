@@ -82,6 +82,7 @@ def well_form(value):
     value = re.sub(r'<script(.*?)/script>', "", value)
     value = re.sub(r'download>', ">", value)
     value = re.sub(r'<\?xml version="1.0" encoding="UTF-8"\?>', "", value)
+    value = re.sub(r'data-lazyload', "", value)
 
     return value
 
