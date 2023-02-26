@@ -79,10 +79,26 @@ def well_form(value):
     value = re.sub(r'<hr>', "", value)
     value = re.sub(r'&', "", value)
 
-    value = re.sub(r'<script(.*?)/script>', "", value)
+    value = re.sub(r'<script(.*?)/script>', "", value, flags=re.IGNORECASE)
+    value = re.sub(r'<iframe(.*?)/iframe>', "", value, flags=re.IGNORECASE)
+
     value = re.sub(r'download>', ">", value)
     value = re.sub(r'<\?xml version="1.0" encoding="UTF-8"\?>', "", value)
     value = re.sub(r'data-lazyload', "", value)
+    value = re.sub(r'xlink:', "", value)
+    value = re.sub(r'itemscope(.*?)>', ">", value)
+    value = re.sub(r'<BR>', "", value)
+    value = re.sub(r'<STRONG>', "", value)
+    value = re.sub(r'</STRONG>', "", value)
+    value = re.sub('SECTION', 'section', value)
+    value = re.sub('DIV', 'div', value)
+    value = value.replace("slider__header", "\"slider__header\"")
+    value = value.replace("media>", "\"media\">")
+    value = value.replace("slider__body", "\"slider__body\"")
+    value = value.replace("class=media__text", "")
+    value = value.replace("id=c57278", "")
+    value = re.sub(r'\<span id\=\"page45R_mcid5\" class\=\"markedContent\"\>',
+                   "<span id=\"page45R_mcid5\" class=\"markedContent\"/>", value)
 
     return value
 
@@ -92,13 +108,14 @@ def format_title(title):
 
 
 def format_identifier(identifier):
-    return identifier.lower() \
+    identifier = identifier.lower() \
         .replace(' // ', ' ') \
         .replace(".", "").replace("!", "").replace("&", "").replace(":", "") \
         .replace("\"", "").replace("„", "").replace("“", "").replace("\"", "") \
         .replace(" ", "-").replace("--", "-").replace("--", "-") \
         .replace("-–-", "-").replace("---", "-") \
         .replace("save-date-", "").replace("save-the-date-", "")
+    return re.sub(r'\?chash=.*', "", identifier)
 
 
 def format_date(date):
@@ -171,29 +188,29 @@ def format_date_time_end(year, month, day, time, delimiter=":"):
 
 
 def format_month(month):
-    if month == "Januar" or month == "Jan":
+    if month == "Januar" or month == "Jan" or month == "01":
         return "01"
-    if month == "Februar" or month == "Feb":
+    if month == "Februar" or month == "Feb" or month == "02":
         return "02"
-    if month == "März" or month == "Mär":
+    if month == "März" or month == "Mär" or month == "03":
         return "03"
-    if month == "April" or month == "Apr":
+    if month == "April" or month == "Apr" or month == "04":
         return "04"
-    if month == "Mai" or month == "Mai":
+    if month == "Mai" or month == "Mai" or month == "05":
         return "05"
-    if month == "Juni" or month == "Jun":
+    if month == "Juni" or month == "Jun" or month == "06":
         return "06"
-    if month == "Juli" or month == "Jul":
+    if month == "Juli" or month == "Jul" or month == "07":
         return "07"
-    if month == "August" or month == "Aug":
+    if month == "August" or month == "Aug" or month == "08":
         return "08"
-    if month == "September" or month == "Sep":
+    if month == "September" or month == "Sep" or month == "09":
         return "09"
-    if month == "Oktober" or month == "Okt":
+    if month == "Oktober" or month == "Okt" or month == "10":
         return "10"
-    if month == "November" or month == "Nov":
+    if month == "November" or month == "Nov" or month == "11":
         return "11"
-    if month == "Dezember" or month == "Dez":
+    if month == "Dezember" or month == "Dez" or month == "12":
         return "12"
 
 
