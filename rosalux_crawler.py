@@ -66,125 +66,129 @@ def parse_html(logger, workspace_path, html_file_name, clean, quiet) -> List[Ros
 
     events = []
 
-    # Parse page
-    for event_view in root.findall('.//div[@class="elasticsearch__list"]')[0]:
-        link_element = event_view.find('.//div[@class="teaser teaser--event"]/a')
+    event_list = root.findall('.//div[@class="elasticsearch__list"]')
+    if event_list:
 
-        if link_element is not None:
-            link = link_element.attrib["href"]
+        # Parse page
+        for event_view in root.findall('.//div[@class="elasticsearch__list"]')[0]:
+            link_element = event_view.find('.//div[@class="teaser teaser--event"]/a')
 
-            identifier = format_identifier(re.sub(r'.*/', "", link))
-            url = f"https://rosalux.de{link}"
+            if link_element is not None:
+                link = link_element.attrib["href"]
 
-            html_file_name = identifier + ".html"
-            xml_file_name = identifier + ".xml"
+                identifier = format_identifier(re.sub(r'.*/', "", link))
+                url = f"https://rosalux.de{link}"
 
-            field_subtitle = root.find('.//p[@class="teaser__text"]')
-            field_category = root.find('.//b[@class="teaser__event-type"]')
-            field_title = field_category.tail.strip()
+                html_file_name = identifier + ".html"
+                xml_file_name = identifier + ".xml"
 
-            download_site(logger, workspace_path, url, html_file_name, clean, quiet)
-            transform_html(workspace_path, html_file_name, xml_file_name)
+                field_subtitle = root.find('.//p[@class="teaser__text"]')
+                field_category = root.find('.//b[@class="teaser__event-type"]')
+                field_title = field_category.tail.strip()
 
-            root = element_tree.parse(os.path.join(workspace_path, xml_file_name)).getroot()
+                download_site(logger, workspace_path, url, html_file_name, clean, quiet)
+                transform_html(workspace_path, html_file_name, xml_file_name)
 
-            field_image = root.find('.//div[@class="textmedia__image-liner"]/img')
-            field_date_time = root.findall('.//p[@class="news__meta-text"]').pop(1)
-            # field_spoken_language = root.findall('.//dl[@class="field--spoken-language"]/dd')
-            street = root.find('.//span[@itemprop="streetAddress"]')
-            postalCode = root.find('.//span[@itemprop="postalCode"]')
-            locality = root.find('.//span[@itemprop="addressLocality"]')
-            field_location = f"{street.text.strip()} {postalCode.text} {locality.text}"
-            field_organizer = "Rosa-Luxemburg-Stiftung"
-            # field_fee = root.find('.//div[@class="field--spoken-language"]/dd')
-            field_content = ""
-            for paragraph in root.find('.//div[@class="textmedia__text"]'):
-                if paragraph.text is not None:
-                    field_content += f'{paragraph.text}\n'
+                root = element_tree.parse(os.path.join(workspace_path, xml_file_name)).getroot()
 
-            title = format_title(field_title) if field_title is not None and field_title is not None else ""
-            subtitle = field_subtitle.text.strip() if field_subtitle is not None and field_subtitle.text is not None else ""
-            description = field_content.strip() if field_content is not None and field_content is not None else ""
-            image = field_image.attrib["src"].strip() if field_image is not None and \
-                                                         field_image.attrib["src"] is not None else ""
-            field_contact_name = root.find('.//div[@class="person__column person__column--first"]/h4')
-            field_contact_email = root.find(
-                './/div[@class="person__column person__column--second"]/p[@class="person__info person__info--email"]/a')
+                field_image = root.find('.//div[@class="textmedia__image-liner"]/img')
+                field_date_time = root.findall('.//p[@class="news__meta-text"]').pop(1)
+                # field_spoken_language = root.findall('.//dl[@class="field--spoken-language"]/dd')
+                street = root.find('.//span[@itemprop="streetAddress"]')
+                postalCode = root.find('.//span[@itemprop="postalCode"]')
+                locality = root.find('.//span[@itemprop="addressLocality"]')
+                field_location = f"{street.text.strip()} {postalCode.text} {locality.text}"
+                field_organizer = "Rosa-Luxemburg-Stiftung"
+                # field_fee = root.find('.//div[@class="field--spoken-language"]/dd')
+                field_content = ""
+                for paragraph in root.find('.//div[@class="textmedia__text"]'):
+                    if paragraph.text is not None:
+                        field_content += f'{paragraph.text}\n'
 
-            if field_date_time is not None and field_date_time.text is not None:
+                title = format_title(field_title) if field_title is not None and field_title is not None else ""
+                subtitle = field_subtitle.text.strip() if field_subtitle is not None and field_subtitle.text is not None else ""
+                description = field_content.strip() if field_content is not None and field_content is not None else ""
+                image = field_image.attrib["src"].strip() if field_image is not None and \
+                                                             field_image.attrib["src"] is not None else ""
+                field_contact_name = root.find('.//div[@class="person__column person__column--first"]/h4')
+                field_contact_email = root.find(
+                    './/div[@class="person__column person__column--second"]/p[@class="person__info person__info--email"]/a')
 
-                start_date_raw = field_date_time.text.strip().split("-")[0]
-                end_date_raw = field_date_time.text.strip().split("-")[1].strip()
-                start_date = format_date_time_start(start_date_raw.split(",")[0].split(".")[2],
-                                                    start_date_raw.split(",")[0].split(".")[1],
-                                                    start_date_raw.split(",")[0].split(".")[0],
-                                                    start_date_raw.split(",")[1], ":")
-                if end_date_raw.__contains__(","):
-                    end_date = format_date_time_end(end_date_raw.split(",")[0].split(".")[2],
-                                                    end_date_raw.split(",")[0].split(".")[1],
-                                                    end_date_raw.split(",")[0].split(".")[0],
-                                                    end_date_raw.split(",")[1], ":")
+                if field_date_time is not None and field_date_time.text is not None:
+
+                    start_date_raw = field_date_time.text.strip().split("-")[0]
+                    end_date_raw = field_date_time.text.strip().split("-")[1].strip()
+                    start_date = format_date_time_start(start_date_raw.split(",")[0].split(".")[2],
+                                                        start_date_raw.split(",")[0].split(".")[1],
+                                                        start_date_raw.split(",")[0].split(".")[0],
+                                                        start_date_raw.split(",")[1], ":")
+                    if end_date_raw.__contains__(","):
+                        end_date = format_date_time_end(end_date_raw.split(",")[0].split(".")[2],
+                                                        end_date_raw.split(",")[0].split(".")[1],
+                                                        end_date_raw.split(",")[0].split(".")[0],
+                                                        end_date_raw.split(",")[1], ":")
+                    else:
+                        end_date = format_date_time_end(start_date_raw.split(",")[0].split(".")[2],
+                                                        start_date_raw.split(",")[0].split(".")[1],
+                                                        start_date_raw.split(",")[0].split(".")[0],
+                                                        end_date_raw, ":")
+
                 else:
-                    end_date = format_date_time_end(start_date_raw.split(",")[0].split(".")[2],
-                                                    start_date_raw.split(",")[0].split(".")[1],
-                                                    start_date_raw.split(",")[0].split(".")[0],
-                                                    end_date_raw, ":")
+                    start_date = ""
+                    end_date = ""
 
+                category = field_category.text.strip() if field_category is not None and field_category.text is not None else ""
+
+                languages = []
+
+                # location = field_location.text.strip() if field_location is not None and field_location.text is not None
+                # else ""
+                organizer = field_organizer.strip() \
+                    if field_organizer is not None and field_organizer is not None else ""
+                fees = ""
+
+                contact_person = field_contact_name
+                contact_phone = ""
+                contact_mail = field_contact_email
+
+                location_street = street
+                location_city = locality
+
+                event = RosaluxEvent(
+                    identifier=identifier,
+                    url=url,
+                    title=title,
+                    subtitle=subtitle,
+                    description=description,
+                    image=image,
+                    image_bucket=None,
+                    start_date=start_date,
+                    end_date=end_date,
+                    category=category,
+                    languages=languages,
+                    organizer=organizer,
+                    fees=fees,
+                    contact_person=contact_person,
+                    contact_phone=contact_phone,
+                    contact_mail=contact_mail,
+                    location_street=location_street,
+                    location_city=location_city
+                )
+
+                events.append(event)
             else:
-                start_date = ""
-                end_date = ""
-
-            category = field_category.text.strip() if field_category is not None and field_category.text is not None else ""
-
-            languages = []
-
-            # location = field_location.text.strip() if field_location is not None and field_location.text is not None
-            # else ""
-            organizer = field_organizer.strip() \
-                if field_organizer is not None and field_organizer is not None else ""
-            fees = ""
-
-            contact_person = field_contact_name
-            contact_phone = ""
-            contact_mail = field_contact_email
-
-            location_street = street
-            location_city = locality
-
-            event = RosaluxEvent(
-                identifier=identifier,
-                url=url,
-                title=title,
-                subtitle=subtitle,
-                description=description,
-                image=image,
-                image_bucket=None,
-                start_date=start_date,
-                end_date=end_date,
-                category=category,
-                languages=languages,
-                organizer=organizer,
-                fees=fees,
-                contact_person=contact_person,
-                contact_phone=contact_phone,
-                contact_mail=contact_mail,
-                location_street=location_street,
-                location_city=location_city
-            )
-
-            events.append(event)
-        else:
-            pass
+                pass
 
     return events
 
 
-def download_file_with_webdriver(logger, file_path, url):
+def download_file_with_webdriver(logger, file_path, url, next_month):
     """
     Downloads value of a given URL into a file
-    :param self:
+    :param logger:
     :param file_path:
     :param url:
+    :param next_month:
     :return:
     """
     try:
@@ -193,6 +197,8 @@ def download_file_with_webdriver(logger, file_path, url):
         driver = webdriver.Chrome(options=op)
         # driver = webdriver.Chrome()
         driver.get(url)
+        if next_month:
+            driver.find_element(By.CSS_SELECTOR, ".calendar__change-month-icon--next > use").click()
         driver.find_element(By.ID, "elasticsearch-dynamic-id-1").click()
         driver.find_element(By.ID, "control-tab-2").click()
         driver.find_element(By.CSS_SELECTOR, "#tab-2 .checkbox:nth-child(2) > .checkbox__label").click()
@@ -209,7 +215,7 @@ def download_file_with_webdriver(logger, file_path, url):
         return None
 
 
-def download_site_with_webdriver(logger, results_path, url, file_name, clean, quiet):
+def download_site_with_webdriver(logger, results_path, url, file_name, clean, quiet, next_month):
     file_path = os.path.join(results_path, file_name)
 
     # Check if result needs to be generated
@@ -218,7 +224,8 @@ def download_site_with_webdriver(logger, results_path, url, file_name, clean, qu
         download_file_with_webdriver(
             logger=logger,
             file_path=file_path,
-            url=url
+            url=url,
+            next_month=next_month
         )
 
         if not quiet:
@@ -248,11 +255,26 @@ class RosaluxCrawler(AbstractCrawler):
 
         super().run(logger, workspace_path, content_path, uploads_path, clean, quiet)
 
-        # Download overview site
-        download_site_with_webdriver(logger, workspace_path, self.url, "rosalux.html", clean, quiet)
+        # Download overview site for this month
+        download_site_with_webdriver(logger, workspace_path, self.url, "rosalux.html", clean, quiet, False)
 
         # Parse overview site and iterate over events
         for event in parse_html(logger, workspace_path, "rosalux.html", clean, quiet):
+            # Generate image for event
+            generate_image(logger, workspace_path, uploads_path, event)
+
+            # Add image bucket URL
+            if event.image != "":
+                event.image_bucket = f"https://storage.googleapis.com/fem-readup.appspot.com/{event.identifier}.webp"
+
+            # Generate content for event
+            generate_content(logger, content_path, event)
+
+        # Download overview site for next month
+        download_site_with_webdriver(logger, workspace_path, self.url, "rosalux-2.html", clean, quiet, True)
+
+        # Parse overview site and iterate over events
+        for event in parse_html(logger, workspace_path, "rosalux-2.html", clean, quiet):
             # Generate image for event
             generate_image(logger, workspace_path, uploads_path, event)
 
