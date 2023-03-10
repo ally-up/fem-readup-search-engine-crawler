@@ -112,14 +112,23 @@ def parse_html(logger, workspace_path, html_file_name, clean, quiet) -> List[Ros
                 './/div[@class="person__column person__column--second"]/p[@class="person__info person__info--email"]/a')
 
             if field_date_time is not None and field_date_time.text is not None:
-                start_date = format_date_time_start(field_date_time.text.strip().split(",")[0].split(".")[2],
-                                                    field_date_time.text.strip().split(",")[0].split(".")[1],
-                                                    field_date_time.text.strip().split(",")[0].split(".")[0],
-                                                    field_date_time.text.strip().split(",")[1], ":")
-                end_date = format_date_time_end(field_date_time.text.strip().split(",")[0].split(".")[2],
-                                                field_date_time.text.strip().split(",")[0].split(".")[1],
-                                                field_date_time.text.strip().split(",")[0].split(".")[0],
-                                                field_date_time.text.strip().split(",")[1], ":")
+
+                start_date_raw = field_date_time.text.strip().split("-")[0]
+                end_date_raw = field_date_time.text.strip().split("-")[1].strip()
+                start_date = format_date_time_start(start_date_raw.split(",")[0].split(".")[2],
+                                                    start_date_raw.split(",")[0].split(".")[1],
+                                                    start_date_raw.split(",")[0].split(".")[0],
+                                                    start_date_raw.split(",")[1], ":")
+                if end_date_raw.__contains__(","):
+                    end_date = format_date_time_end(end_date_raw.split(",")[0].split(".")[2],
+                                                    end_date_raw.split(",")[0].split(".")[1],
+                                                    end_date_raw.split(",")[0].split(".")[0],
+                                                    end_date_raw.split(",")[1], ":")
+                else:
+                    end_date = format_date_time_end(start_date_raw.split(",")[0].split(".")[2],
+                                                    start_date_raw.split(",")[0].split(".")[1],
+                                                    start_date_raw.split(",")[0].split(".")[0],
+                                                    end_date_raw, ":")
 
             else:
                 start_date = ""

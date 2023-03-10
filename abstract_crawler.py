@@ -99,6 +99,7 @@ def well_form(value):
     value = value.replace("id=c57278", "")
     value = re.sub(r'\<span id\=\"page45R_mcid5\" class\=\"markedContent\"\>',
                    "<span id=\"page45R_mcid5\" class=\"markedContent\"/>", value)
+    value = value.replace("class=infobox", "")
 
     return value
 
