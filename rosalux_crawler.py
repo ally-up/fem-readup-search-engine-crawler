@@ -82,8 +82,8 @@ def parse_html(logger, workspace_path, html_file_name, clean, quiet) -> List[Ros
                 html_file_name = identifier + ".html"
                 xml_file_name = identifier + ".xml"
 
-                field_subtitle = root.find('.//p[@class="teaser__text"]')
-                field_category = root.find('.//b[@class="teaser__event-type"]')
+                field_subtitle = event_view.find('.//p[@class="teaser__text"]')
+                field_category = event_view.find('.//b[@class="teaser__event-type"]')
                 field_title = field_category.tail.strip()
 
                 download_site(logger, workspace_path, url, html_file_name, clean, quiet)
