@@ -90,6 +90,8 @@ def well_form(value):
     value = re.sub(r'<BR>', "", value)
     value = re.sub(r'<STRONG>', "", value)
     value = re.sub(r'</STRONG>', "", value)
+    value = re.sub(r'<P>', "", value)
+    value = re.sub(r'</P>', "", value)
     value = re.sub('SECTION', 'section', value)
     value = re.sub('DIV', 'div', value)
     value = value.replace("slider__header", "\"slider__header\"")
