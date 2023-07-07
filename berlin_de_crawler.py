@@ -128,7 +128,7 @@ def parse_html(logger, workspace_path, html_file_name, clean, quiet) -> List[Ber
             field_subtitle = root.find('.//h2')
 
             field_date_time = format_date_time(field_date_time.split(",")[1],
-                                               field_date_time.split(",")[2].replace(":", "."))
+                                               field_date_time.split(",")[2].replace(":", ".").strip(" Uhr"))
 
             title = format_title(field_title.text) if field_title is not None and field_title.text is not None else ""
             subtitle = field_subtitle.text.strip() if field_subtitle is not None and field_subtitle.text is not None else ""
