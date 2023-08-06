@@ -4,6 +4,7 @@ import xml.etree.ElementTree as element_tree
 from typing import List
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from webdriver_manager.chrome import ChromeDriverManager
 
 import urllib3
 
@@ -42,6 +43,7 @@ def transform_html(workspace_path, html_file_name, xml_file_name):
         content = " ".join(html_file.read().splitlines())
         content = re.sub(r'.*<main', "<main", content)
         content = re.sub(r'main>.*', "main>", content)
+        content = content.replace("<BLOCKQUOTE>", "<blockquote>")
 
         content = well_form(content)
 
@@ -194,7 +196,8 @@ def download_file_with_webdriver(logger, file_path, url, next_month):
     try:
         op = webdriver.ChromeOptions()
         op.add_argument('headless')
-        driver = webdriver.Chrome(options=op)
+        driver = webdriver.Chrome(ChromeDriverManager().install(), options=op)
+        #driver = webdriver.Chrome(options=op)
         # driver = webdriver.Chrome()
         driver.get(url)
         if next_month:
