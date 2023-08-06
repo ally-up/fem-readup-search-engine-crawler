@@ -5,6 +5,7 @@ from typing import List
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.service import Service as ChromeService
 
 import urllib3
 
@@ -196,7 +197,7 @@ def download_file_with_webdriver(logger, file_path, url, next_month):
     try:
         op = webdriver.ChromeOptions()
         op.add_argument('headless')
-        driver = webdriver.Chrome(ChromeDriverManager().install(), options=op)
+        driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=op)
         #driver = webdriver.Chrome(options=op)
         # driver = webdriver.Chrome()
         driver.get(url)
