@@ -47,6 +47,7 @@ def transform_html(workspace_path, html_file_name, xml_file_name):
         content = content.replace("<BLOCKQUOTE>", "<blockquote>")
 
         content = well_form(content)
+        content = re.sub(r'id=c\d{5}', "", content)
 
     with open(os.path.join(workspace_path, xml_file_name), "w") as xml_file:
         xml_file.write(content)

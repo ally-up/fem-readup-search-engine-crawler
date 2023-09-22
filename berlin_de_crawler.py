@@ -46,6 +46,7 @@ def transform_html(workspace_path, html_file_name, xml_file_name):
         content = content.strip()
         content = re.sub("Seminare/Workshops/Führungen</a>", "Seminare/Workshops/Führunge", content)
         content = content.replace("<li>Fotoausstellungen</a>", "<li>Fotoausstellungen")
+        content = content.replace("<li>Vorträge</a>", "<li>Vorträge")
 
         content = well_form(content)
 
