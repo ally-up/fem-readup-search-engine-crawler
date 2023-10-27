@@ -41,6 +41,8 @@ def transform_html(workspace_path, html_file_name, xml_file_name):
         content = re.sub(r'main>.*', "main>", content)
 
         content = well_form(content)
+        content = re.sub(r'<div class="coop-partners">(.*?)coop-partners -->', "", content)
+        content = re.sub(r'xml:lang="\b[A-Z]{2}"', "", content)
 
     with open(os.path.join(workspace_path, xml_file_name), "w") as xml_file:
         xml_file.write(content)
@@ -180,8 +182,11 @@ class BoellCrawler(AbstractCrawler):
     parameter_berlin = "f%5B0%5D=ort_slide_in%3A2445"
     parameter_feminism = "f%5B1%5D=thema_slide_in_menu%3A3431"
     parameter_gender_politics = "f%5B2%5D=thema_slide_in_menu%3A4083"
+    parameter_gender_democracy = "f%5B1%5D=thema_slide_in_menu%3A3405"
+    parameter_society_politics = "f%5B3%5D=thema_slide_in_menu%3A4059"
+    parameter_migration_and_diversity = "f%5B2%5D=thema_slide_in_menu%3A4053"
 
-    parameters = [parameter_berlin, parameter_feminism, parameter_gender_politics]
+    parameters = [parameter_berlin, parameter_feminism, parameter_gender_politics, parameter_gender_democracy, parameter_society_politics, parameter_migration_and_diversity]
 
     url = f"https://calendar.boell.de/de/calendar/frontpage?{'&'.join(parameters)}"
 
@@ -201,6 +206,8 @@ class BoellCrawler(AbstractCrawler):
 
         # Download overview site
         download_site(logger, workspace_path, self.url, "boell.html", clean, quiet)
+
+
 
         # Parse overview site and iterate over events
         for event in parse_html(logger, workspace_path, "boell.html", clean, quiet):
