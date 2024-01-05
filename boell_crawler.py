@@ -178,15 +178,13 @@ class BoellCrawler(AbstractCrawler):
     """
     Crawls events posted on https://calendar.boell.de/
     """
-
     parameter_berlin = "f%5B0%5D=ort_slide_in%3A2445"
     parameter_feminism = "f%5B1%5D=thema_slide_in_menu%3A3431"
     parameter_gender_politics = "f%5B2%5D=thema_slide_in_menu%3A4083"
-    parameter_gender_democracy = "f%5B1%5D=thema_slide_in_menu%3A3405"
     parameter_society_politics = "f%5B3%5D=thema_slide_in_menu%3A4059"
     parameter_migration_and_diversity = "f%5B2%5D=thema_slide_in_menu%3A4053"
 
-    parameters = [parameter_berlin, parameter_feminism, parameter_gender_politics, parameter_gender_democracy, parameter_society_politics, parameter_migration_and_diversity]
+    parameters = [parameter_berlin, parameter_feminism, parameter_gender_politics, parameter_society_politics, parameter_migration_and_diversity]
 
     url = f"https://calendar.boell.de/de/calendar/frontpage?{'&'.join(parameters)}"
 
