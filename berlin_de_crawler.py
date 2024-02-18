@@ -137,7 +137,26 @@ def parse_html(logger, workspace_path, html_file_name, clean, quiet) -> List[Ber
             field_subtitle = root.find('.//h2')
 
             if field_date_time is not None:
-                field_date_time = format_date_time(field_date_time.split(",")[1],
+                if field_date_time.__contains__("bis"):
+                    min_time = datetime.time.min
+                    if (len(field_date_time.split("bis")[0]) > 0):
+                        field_date_start = field_date_time.split(" bis ")[0].split(",")[1].strip().split(".")
+                        start_day = format_date_split(field_date_start[2], field_date_start[1], field_date_start[0])
+                        field_date_time = f"{start_day}T{min_time}.000"
+                        field_date_end = field_date_time.split(" bis ")[1].split(",")[1].strip().split(".")
+                        end_day = format_date_split(field_date_end[2], field_date_end[1], field_date_end[0])
+                        end_date_time = f"{end_day}T{min_time}.000"
+                    else:
+                        field_date_start = field_date_time.split("bis")[1].split(".")
+                        end_day = format_date_split(field_date_start[2], field_date_start[1], "01")
+                        end_date_time = f"{end_day}T{min_time}.000"
+                        field_date_time = datetime.datetime.now() + datetime.timedelta(days=90)
+                        field_date_time = field_date_time.__str__().replace(" ", "T")
+
+
+
+                else:
+                    field_date_time = format_date_time(field_date_time.split(",")[1],
                                                    field_date_time.split(",")[2].replace(":", ".").strip(" Uhr"))
             else:
                 laufzeit = root.find('.//div[@class="js-block-limit-height"]/p').text if root.find('.//div[@class="js-block-limit-height"]/p') is not None and root.find('.//div[@class="js-block-limit-height"]/p').text is not None else ""
