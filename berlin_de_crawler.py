@@ -73,6 +73,8 @@ def transform_sub_page_html(workspace_path, html_file_name, xml_file_name):
         content = content.replace('loading="lazy"', "")
         content = content.replace("<li>Fotoausstellungen</a>", "<li>Fotoausstellungen")
         content = content.replace('<option value="upcoming" selected>', '<option value="upcoming">')
+        content = content.replace("placeholder=\"Alle Kategorien\" multiple", "placeholder=\"Alle Kategorien\"")
+
 
         content = well_form(content)
 
@@ -124,6 +126,8 @@ def parse_html(logger, workspace_path, html_file_name, clean, quiet) -> List[Ber
 
             root = element_tree.parse(os.path.join(workspace_path, xml_file_name)).getroot()
             field_content = ""
+            if root.find('.//h1') is not None and root.find('.//h1').text == 'Veranstaltung nicht gefunden':
+                continue
             intro_text = root.find('.//p')
             if intro_text is not None and intro_text.text is not None:
                 field_content = f'{intro_text.text.strip()}\n'
