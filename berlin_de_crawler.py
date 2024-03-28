@@ -147,10 +147,10 @@ def parse_html(logger, workspace_path, html_file_name, clean, quiet) -> List[Ber
                         end_day = format_date_split(field_date_end[2], field_date_end[1], field_date_end[0])
                         end_date_time = f"{end_day}T{min_time}.000"
                     else:
-                        field_date_start = field_date_time.split("bis")[1].split(".")
-                        end_day = format_date_split(field_date_start[2], field_date_start[1], "01")
+                        field_date_start = field_date_time.split("bis")[1].strip().split(".")
+                        end_day = format_date_split(field_date_start[2], field_date_start[1], field_date_start[0])
                         end_date_time = f"{end_day}T{min_time}.000"
-                        field_date_time = datetime.datetime.now() + datetime.timedelta(days=90)
+                        field_date_time = datetime.datetime.now() - datetime.timedelta(days=30)
                         field_date_time = field_date_time.__str__().replace(" ", "T")
 
 
