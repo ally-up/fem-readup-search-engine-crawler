@@ -47,6 +47,7 @@ def transform_html(workspace_path, html_file_name, xml_file_name):
         content = re.sub("Seminare/Workshops/Führungen</a>", "Seminare/Workshops/Führunge", content)
         content = content.replace("<li>Fotoausstellungen</a>", "<li>Fotoausstellungen")
         content = content.replace("<li>Vorträge</a>", "<li>Vorträge")
+        content = content.replace("Podiumsdiskussionen</a>", "Podiumsdiskussionen")
 
         content = well_form(content)
 
@@ -74,6 +75,8 @@ def transform_sub_page_html(workspace_path, html_file_name, xml_file_name):
         content = content.replace("<li>Fotoausstellungen</a>", "<li>Fotoausstellungen")
         content = content.replace('<option value="upcoming" selected>', '<option value="upcoming">')
         content = content.replace("placeholder=\"Alle Kategorien\" multiple", "placeholder=\"Alle Kategorien\"")
+        content = content.replace("Podiumsdiskussionen</a>", "Podiumsdiskussionen")
+
 
 
         content = well_form(content)
