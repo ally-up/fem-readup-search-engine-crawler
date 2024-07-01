@@ -77,7 +77,7 @@ def parse_html(logger, workspace_path, html_file_name, clean, quiet) -> List[Abs
             field_location = root.find('.//span[@class="event-location"]')
             field_language = root.find('.//div[@class="field--spoken-language"]/dt')
             field_fee = root.find('.//div[@class="field--spoken-language"]/dd')  # TODO: fix copy paste
-            field_content = root.findall('.//div[@class="event-content"]')
+            field_content = root.find('.//div[@class="event-excerpt"]/p')
             field_url = event_view.find('.//a').attrib.get('href')
 
             title = format_title(
@@ -86,8 +86,8 @@ def parse_html(logger, workspace_path, html_file_name, clean, quiet) -> List[Abs
 
             subtitle = field_subtitle.text.strip() if field_subtitle is not None and field_subtitle[
                 0].text is not None else ""
-            description = field_content[0].text.strip() if field_content is not None and field_content[
-                0].text is not None else ""
+            description = field_content.text.strip() if field_content is not None and field_content.text is not None \
+                else ""
             image = ""
 
             if field_year is not None and field_year.text is not None and \
