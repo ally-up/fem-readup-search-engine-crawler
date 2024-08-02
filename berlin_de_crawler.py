@@ -76,6 +76,7 @@ def transform_sub_page_html(workspace_path, html_file_name, xml_file_name):
         content = content.replace('<option value="upcoming" selected>', '<option value="upcoming">')
         content = content.replace("placeholder=\"Alle Kategorien\" multiple", "placeholder=\"Alle Kategorien\"")
         content = content.replace("Podiumsdiskussionen</a>", "Podiumsdiskussionen")
+        content = content.replace("Karaoke<3ies", "Karaoke3ies")
 
 
 
