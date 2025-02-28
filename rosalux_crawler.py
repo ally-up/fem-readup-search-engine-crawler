@@ -53,6 +53,11 @@ def transform_html(workspace_path, html_file_name, xml_file_name):
         content = content.replace("dir=ltr", "")
         content = content.replace("lang=AR-SY", "")
         content = content.replace("dir=rtl", "")
+        content = content.replace("</A>", "")
+        content = content.replace("class=slider", "")
+        content = content.replace("class=slider__body", "")
+        content = content.replace("class=textmedia__text", "")
+        content = content.replace("class=\"slider__header\"", "")
     with open(os.path.join(workspace_path, xml_file_name), "w") as xml_file:
         xml_file.write(content)
 
